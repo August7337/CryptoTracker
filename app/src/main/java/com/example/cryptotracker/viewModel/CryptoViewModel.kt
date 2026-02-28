@@ -14,6 +14,12 @@ class CryptoViewModel: ViewModel() {
     private val _cryptos = mutableStateOf<List<Crypto>>(emptyList())
     val cryptos: State<List<Crypto>> = _cryptos
 
+    private val _favs = mutableStateOf<List<Crypto>>(emptyList())
+    val favs: State<List<Crypto>> = _favs
+
+    var favoriteIds = mutableStateOf<Set<String>>(emptySet())
+
+
     init {
         fetchCryptos()
     }
@@ -28,6 +34,22 @@ class CryptoViewModel: ViewModel() {
                 Log.e("CryptoViewModel", "Error: ${e.message}")
             }
         }
+    }
+
+    fun toggleFavorite(crypto: Crypto) {
+        val currentFavorites = favoriteIds.value.toMutableSet()
+        val currentFavs = _favs.value.toMutableList()
+
+        if (currentFavorites.contains(crypto.id)) {
+            currentFavorites.remove(crypto.id)
+            currentFavs.removeAll { it.id == crypto.id }
+        } else {
+            currentFavorites.add(crypto.id)
+            currentFavs.add(crypto)
+        }
+
+        favoriteIds.value = currentFavorites.toSet()
+        _favs.value = currentFavs
     }
 
 }

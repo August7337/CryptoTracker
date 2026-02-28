@@ -13,9 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,21 +37,68 @@ import com.example.cryptotracker.viewModel.CryptoViewModel
 @Composable
 fun CryptoListScreen(viewModel: CryptoViewModel = CryptoViewModel()) {
     val cryptos by viewModel.cryptos
+    val favoriteIds by viewModel.favoriteIds
+    val favs by viewModel.favs
+
 
     if (cryptos.isEmpty()) {
         CircularProgressIndicator()
     } else {
         LazyColumn (
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            items(cryptos) {
-                CryptoCard(it)
+            if (favs.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Favorites",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+                    )
+                }
+                items(favs) { crypto->
+
+                    val isFav = favoriteIds.contains(crypto.id)
+                    CryptoCard(
+                        crypto,
+                        isFavorite = isFav,
+                        onFavoriteClick = {viewModel.toggleFavorite(crypto) }
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(64.dp))
+                }
+
+            }
+
+            item {
+                Text(
+                    text = "Trending cryptocurrencies",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+                )
+            }
+
+            items(cryptos) { crypto->
+
+                val isFav = favoriteIds.contains(crypto.id)
+                CryptoCard(
+                    crypto,
+                    isFavorite = isFav,
+                    onFavoriteClick = {viewModel.toggleFavorite(crypto) }
+                )
             }
         }
     }
 }
 @Composable
-fun CryptoCard(crypto: Crypto) {
+fun CryptoCard(
+    crypto: Crypto,
+    isFavorite: Boolean = false,
+    onFavoriteClick: () -> Unit = {}
+    ) {
     val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US)
     val formattedPrice = currencyFormatter.format(crypto.priceUsd)
 
@@ -70,6 +122,16 @@ fun CryptoCard(crypto: Crypto) {
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
+        IconButton(
+            onClick = onFavoriteClick,
+            modifier = Modifier.padding(end = 8.dp)
+        ) {
+            Icon(
+                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = "Favori",
+                tint = if (isFavorite) Color(0xFFFF5252) else Color.Gray
+            )
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
