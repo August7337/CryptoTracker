@@ -1,5 +1,6 @@
 package com.example.cryptotracker.models
 
+import android.R
 import com.google.gson.annotations.SerializedName
 
 data class Crypto(
@@ -16,5 +17,8 @@ data class Crypto(
     val percentChange7d: Double,
 
     @SerializedName("market_cap_usd")
-    val marketCapUsd: Double
+    val marketCapUsd: Double,
+
+    val tsupply: Double,
+    val volume24: Double
 )

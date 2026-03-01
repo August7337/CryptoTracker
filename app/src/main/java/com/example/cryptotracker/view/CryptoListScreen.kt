@@ -1,7 +1,9 @@
 package com.example.cryptotracker.view
 
 import android.icu.text.NumberFormat
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,6 +27,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -99,6 +104,8 @@ fun CryptoCard(
     isFavorite: Boolean = false,
     onFavoriteClick: () -> Unit = {}
     ) {
+    var expanded by remember { mutableStateOf(false)}
+
     val currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US)
     val formattedPrice = currencyFormatter.format(crypto.priceUsd)
 
@@ -116,26 +123,25 @@ fun CryptoCard(
                 width = 1.dp,
                 color = Color.White.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(20.dp)
-            ),
+            )
+            .animateContentSize()
+            .clickable { expanded = !expanded },
         colors = CardDefaults.cardColors(
             containerColor = Color.White.copy(alpha = 0.05f)
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
-        IconButton(
-            onClick = onFavoriteClick,
-            modifier = Modifier.padding(end = 8.dp)
-        ) {
+        IconButton(onClick = onFavoriteClick) {
             Icon(
                 imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                contentDescription = "Favori",
+                contentDescription = "Favorits",
                 tint = if (isFavorite) Color(0xFFFF5252) else Color.Gray
             )
         }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -185,13 +191,39 @@ fun CryptoCard(
                 )
             }
         }
+        if (expanded) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Total supplie: ${format(crypto.tsupply, false)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+                Text(
+                    text = "24 Volume: ${format(crypto.volume24)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
+        }
     }
 }
 
-fun format(value: Double): String {
-    return when {
-        value >= 1_000_000_000 -> String.format(Locale.US, "$%.2f B", value / 1_000_000_000)
-        value >= 1_000_000 -> String.format(Locale.US, "$%.2f M", value / 1_000_000)
-        else -> String.format(Locale.US, "$%,.0f", value)
+fun format(value: Double, withDollar: Boolean = true): String {
+    val formattedNumber = when {
+        value >= 1_000_000_000 -> String.format(Locale.US, "%.2f B", value / 1_000_000_000)
+        value >= 1_000_000 -> String.format(Locale.US, "%.2f M", value / 1_000_000)
+        else -> String.format(Locale.US, "%,.0f", value)
+    }
+
+    return if (withDollar) {
+        "\$$formattedNumber"
+    } else {
+        formattedNumber
     }
 }
