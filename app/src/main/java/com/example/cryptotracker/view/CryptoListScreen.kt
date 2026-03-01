@@ -1,10 +1,11 @@
 package com.example.cryptotracker.view
 
 import android.icu.text.NumberFormat
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,7 +13,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import java.util.Locale
@@ -61,18 +65,24 @@ fun CryptoListScreen(viewModel: CryptoViewModel = CryptoViewModel()) {
                         color = Color.White,
                         modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
                     )
-                }
-                items(favs) { crypto->
 
-                    val isFav = favoriteIds.contains(crypto.id)
-                    CryptoCard(
-                        crypto,
-                        isFavorite = isFav,
-                        onFavoriteClick = {viewModel.toggleFavorite(crypto) }
-                    )
-                }
-                item {
-                    Spacer(modifier = Modifier.height(64.dp))
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(favs, key = { it.id }) { crypto->
+
+                            Box(modifier = Modifier.width(320.dp)) {
+                                CryptoCard(
+                                    crypto = crypto,
+                                    isFavorite = true,
+                                    onFavoriteClick = { viewModel.toggleFavorite(crypto) }
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(28.dp))
                 }
 
             }
@@ -119,13 +129,13 @@ fun CryptoCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .clickable { expanded = !expanded }
             .border(
                 width = 1.dp,
                 color = Color.White.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(20.dp)
-            )
-            .animateContentSize()
-            .clickable { expanded = !expanded },
+            ),
         colors = CardDefaults.cardColors(
             containerColor = Color.White.copy(alpha = 0.05f)
         ),
@@ -191,11 +201,11 @@ fun CryptoCard(
                 )
             }
         }
-        if (expanded) {
+        AnimatedVisibility(visible = expanded) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
